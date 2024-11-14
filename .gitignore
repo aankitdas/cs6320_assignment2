@@ -134,3 +134,9 @@ training.json
 validation.json
 test.json
 Data_Embedding.zip
+
+# My additions
+testing.ipynb
+/images
+/assignment2
+/Data_Embedding

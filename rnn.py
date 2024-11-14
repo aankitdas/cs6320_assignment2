@@ -12,6 +12,8 @@ import json
 import string
 from argparse import ArgumentParser
 import pickle
+import matplotlib.pyplot as plt
+
 
 unk = '<UNK>'
 # Consult the PyTorch documentation for information on the functions used below:
@@ -30,14 +32,12 @@ class RNN(nn.Module):
         return self.loss(predicted_vector, gold_label)
 
     def forward(self, inputs):
-        # [to fill] obtain hidden layer representation (https://pytorch.org/docs/stable/generated/torch.nn.RNN.html)
-        _, hidden = 
-        # [to fill] obtain output layer representations
-
-        # [to fill] sum over output 
-
-        # [to fill] obtain probability dist.
-
+        # obtain hidden layer representation 
+        _, hidden = self.rnn(inputs, None)
+        # obtain output layer representations
+        output = self.W(hidden[-1])
+        # obtain probability dist.  
+        predicted_vector = self.softmax(output) 
         return predicted_vector
 
 
@@ -64,6 +64,8 @@ if __name__ == "__main__":
     parser.add_argument("--val_data", required = True, help = "path to validation data")
     parser.add_argument("--test_data", default = "to fill", help = "path to test data")
     parser.add_argument('--do_train', action='store_true')
+
+    
     args = parser.parse_args()
 
     print("========== Loading data ==========")
@@ -78,15 +80,22 @@ if __name__ == "__main__":
 
     print("========== Vectorizing data ==========")
     model = RNN(50, args.hidden_dim)  # Fill in parameters
-    # optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
-    word_embedding = pickle.load(open('./word_embedding.pkl', 'rb'))
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    #optimizer = optim.Adam(model.parameters(), lr=0.1)
+    word_embedding = pickle.load(open('word_embedding.pkl', 'rb'))
 
     stopping_condition = False
     epoch = 0
 
     last_train_accuracy = 0
     last_validation_accuracy = 0
+
+    training_losses = []
+    validation_accuracies = []
+    
+    patience = 5  #number of epochs to wait for improvement
+    best_validation_accuracy = 0
+    epochs_without_improvement = 0
 
     while not stopping_condition:
         random.shuffle(train_data)
@@ -137,10 +146,12 @@ if __name__ == "__main__":
             loss_count += 1
             loss.backward()
             optimizer.step()
-        print(loss_total/loss_count)
+        
+        training_losses.append(loss_total / loss_count)
+
         print("Training completed for epoch {}".format(epoch + 1))
         print("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
-        trainning_accuracy = correct/total
+        training_accuracy = correct/total
 
 
         model.eval()
@@ -162,20 +173,60 @@ if __name__ == "__main__":
             correct += int(predicted_label == gold_label)
             total += 1
             # print(predicted_label, gold_label)
+        
+        validation_accuracies.append(correct / total)
+  
         print("Validation completed for epoch {}".format(epoch + 1))
         print("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
         validation_accuracy = correct/total
 
-        if validation_accuracy < last_validation_accuracy and trainning_accuracy > last_train_accuracy:
-            stopping_condition=True
-            print("Training done to avoid overfitting!")
-            print("Best validation accuracy is:", last_validation_accuracy)
+        #early stopping condition
+        if validation_accuracy > best_validation_accuracy:
+            best_validation_accuracy = validation_accuracy
+            epochs_without_improvement = 0  #reset the counter if we have improved
         else:
+            epochs_without_improvement += 1
+
+        if epochs_without_improvement >= patience:
+            stopping_condition = True
+            print(f"Training stopped after {epoch + 1} epochs due to no improvement in validation accuracy.")
+            print(f"Best validation accuracy achieved: {best_validation_accuracy}")
+        else:
+            last_train_accuracy = training_accuracy
             last_validation_accuracy = validation_accuracy
-            last_train_accuracy = trainning_accuracy
+
+        #discarding original stopping criteria for a better one
+        # if validation_accuracy < last_validation_accuracy and trainning_accuracy > last_train_accuracy:
+        #     stopping_condition=True
+        #     print("Training done to avoid overfitting!")
+        #     print("Best validation accuracy is:", last_validation_accuracy)
+        # else:
+        #     last_validation_accuracy = validation_accuracy
+        #     last_train_accuracy = trainning_accuracy
 
         epoch += 1
+    # Plotting the loss and accuracy after training
+    plt.figure(figsize=(12, 5))
 
+    # Plot training loss
+    plt.subplot(1, 2, 1)
+    plt.plot(range(1, epoch + 1), training_losses, label='Training Loss', color='red')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Training Loss vs Epochs')
+    plt.legend()
+
+    # Plot validation accuracy
+    plt.subplot(1, 2, 2)
+    plt.plot(range(1, epoch + 1), validation_accuracies, label='Validation Accuracy', color='blue')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title('Validation Accuracy vs Epochs')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig('images/rnn_64.png')
+    plt.show()
 
 
     # You may find it beneficial to keep track of training accuracy or training loss;
