@@ -50,8 +50,9 @@ python rnn.py --hidden_dim [hparam] --epochs [hparam] \
   - Validation data (JSON)
   - Word embeddings (for RNN)
 
-### Authors
-- Aankit Das
-- Keda Kadu
-Group 22
+## Authors
+- **Aankit Das**
+- **Keda Kadu**
+
+*Group 22
 
