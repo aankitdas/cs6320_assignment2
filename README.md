@@ -1,39 +1,45 @@
-# Neural Networks for Sentiment Analysis
+# Assignment 2 - Neural Networks for Sentiment Analysis
 
 This project implements two types of neural networks for sentiment analysis: Feedforward Neural Network (FFNN) and Recurrent Neural Network (RNN).
+
+## Authors
+- **Aankit Das**
+- **Keda Kadu**
+
+*Group 22
 
 ## Model Architectures
 
 ### Feedforward Neural Network (FFNN)
 - **Takes a fixed-length vector as input**
-- **Architecture**:
-  - Input: \(x \in \mathbb{R}^d\) (\(d\) = vocabulary size)
-  - Hidden layer: \(h \in \mathbb{R}^{|h|}\) (\(h\) = hidden dimension)
-  - Output layer: \(z \in \mathbb{R}^{|\mathcal{Y}|}\)
-  - Final output: \(y\) (probability distribution where \(\sum_{i \in |\mathcal{Y}|} y[i] = 1\))
+
 - **Uses bag-of-words vectorization** for review processing
 
 ### Recurrent Neural Network (RNN)
 - **Processes sequences of vectors one at a time**
-- **Architecture**:
-  - Input: \(x_1, x_2, \ldots, x_k\) where \(x_i \in \mathbb{R}^e\) (\(e\) = embedding size)
-  - Hidden states: \(h_1, h_2, \ldots, h_k\) where \(h_i \in \mathbb{R}^{|h|}\)
-  - Output layer: \(\sum_{i=1}^k z_i\) where \(z_i \in \mathbb{R}^{|\mathcal{Y}|}\)
+
 - **Uses word embeddings** for initialization
 
 ## Usage
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/aankitdas/cs6320_assignment2.git
+   ```
+2. **Install dependencies:**
+    ```python
+    pip install -r requirements.txt
+    ```
+3. **Training FFNN**
+    ```bash
+    python ffnn.py --hidden_dim [hparam] --epochs [hparam] \
+        --train_data [train data path] --val_data [val data path] --do_train
+    ```
 
-### Training FFNN
-```bash
-python ffnn.py --hidden_dim [hparam] --epochs [hparam] \
-    --train_data [train data path] --val_data [val data path] --do_train
-```
-
-### Training RNN
-```bash
-python rnn.py --hidden_dim [hparam] --epochs [hparam] \
-    --train_data [train data path] --val_data [val data path]
-```
+4. **Training RNN**
+    ```bash
+    python rnn.py --hidden_dim [hparam] --epochs [hparam] \
+        --train_data [train data path] --val_data [val data path]
+    ```
 
 ## Features
 - **Data loading functionality provided**
@@ -50,9 +56,5 @@ python rnn.py --hidden_dim [hparam] --epochs [hparam] \
   - Validation data (JSON)
   - Word embeddings (for RNN)
 
-## Authors
-- **Aankit Das**
-- **Keda Kadu**
 
-*Group 22
 
